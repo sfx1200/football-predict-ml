@@ -6,8 +6,6 @@ Falls back to generating realistic synthetic data when no API key is available.
 """
 
 import os
-import json
-import time
 import logging
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -21,6 +19,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configure logging
+Path("logs").mkdir(exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -114,7 +113,7 @@ class SyntheticDataGenerator:
             "Liverpool":        {"attack": 0.92, "defense": 0.88},
             "Arsenal":          {"attack": 0.88, "defense": 0.87},
             "Chelsea":          {"attack": 0.82, "defense": 0.80},
-            "Manchester United":{"attack": 0.78, "defense": 0.75},
+            "Manchester United": {"attack": 0.78, "defense": 0.75},
             "Tottenham":        {"attack": 0.80, "defense": 0.74},
             "Newcastle United": {"attack": 0.79, "defense": 0.78},
             "Aston Villa":      {"attack": 0.77, "defense": 0.76},
@@ -124,7 +123,7 @@ class SyntheticDataGenerator:
             "Fulham":           {"attack": 0.66, "defense": 0.65},
             "Brentford":        {"attack": 0.67, "defense": 0.66},
             "Crystal Palace":   {"attack": 0.63, "defense": 0.62},
-            "Nottingham Forest":{"attack": 0.62, "defense": 0.68},
+            "Nottingham Forest": {"attack": 0.62, "defense": 0.68},
             "Bournemouth":      {"attack": 0.64, "defense": 0.63},
             "Everton":          {"attack": 0.60, "defense": 0.59},
             "Leicester City":   {"attack": 0.61, "defense": 0.58},
@@ -203,7 +202,8 @@ class SyntheticDataGenerator:
             match_date = season_start + timedelta(weeks=matchday - 1)
             # Round-robin pairs for this matchday (simple rotation)
             pairs = []
-            rotated = teams[:1] + teams[matchday % (len(teams) - 1) + 1:] + teams[1:matchday % (len(teams) - 1) + 1]
+            mid = matchday % (len(teams) - 1) + 1
+            rotated = teams[:1] + teams[mid:] + teams[1:mid]
             for i in range(len(teams) // 2):
                 if matchday % 2 == 0:
                     pairs.append((rotated[i], rotated[-(i + 1)]))

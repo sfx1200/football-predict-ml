@@ -4,11 +4,10 @@ from pathlib import Path
 
 import pandas as pd
 import numpy as np
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from feature_engineering import compute_team_features, impute_early_season
+from feature_engineering import compute_team_features, impute_early_season  # noqa: E402
 
 
 def make_clean_df(n_matchdays: int = 10) -> pd.DataFrame:
@@ -16,7 +15,7 @@ def make_clean_df(n_matchdays: int = 10) -> pd.DataFrame:
     from data_collection import SyntheticDataGenerator
     from data_cleaning import (
         standardise_team_names, convert_dates, cast_numeric_columns,
-        filter_finished_matches, add_result_column, remove_duplicates,
+        filter_finished_matches, add_result_column,
     )
 
     gen = SyntheticDataGenerator(seed=99)

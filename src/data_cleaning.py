@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+Path("logs").mkdir(exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",

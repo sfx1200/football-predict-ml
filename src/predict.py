@@ -7,7 +7,6 @@ Used by both the FastAPI layer and the Streamlit dashboard.
 
 import logging
 from pathlib import Path
-from typing import Literal
 
 import joblib
 import numpy as np
@@ -15,7 +14,7 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-MODELS_DIR    = Path("models")
+MODELS_DIR = Path("models")
 PROCESSED_DIR = Path("data/processed")
 
 
@@ -65,9 +64,11 @@ class MatchPredictor:
 
         # Comparative features
         try:
-            row["form_diff"]    = row.get("home_form", 0) - row.get("away_form", 0)
-            row["scored_diff"]  = row.get("home_avg_scored", 0) - row.get("away_avg_scored", 0)
-            row["conceded_diff"]= row.get("home_avg_conceded", 0) - row.get("away_avg_conceded", 0)
+            row["form_diff"] = row.get("home_form", 0) - row.get("away_form", 0)
+            row["scored_diff"] = row.get("home_avg_scored", 0) - row.get("away_avg_scored", 0)
+            row["conceded_diff"] = (
+                row.get("home_avg_conceded", 0) - row.get("away_avg_conceded", 0)
+            )
         except Exception:
             pass
 
@@ -126,7 +127,6 @@ _predictor_cache: dict[str, MatchPredictor] = {}
 
 
 def get_predictor(model_name: str = "xgboost") -> MatchPredictor:
-    global _predictor_cache
     if model_name not in _predictor_cache:
         _predictor_cache[model_name] = MatchPredictor(model_name)
     return _predictor_cache[model_name]

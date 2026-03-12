@@ -18,6 +18,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+Path("logs").mkdir(exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -47,7 +48,8 @@ def _build_team_history(df: pd.DataFrame) -> dict[str, list[dict]]:
     """
     Build a per-team chronological list of match records for rolling lookups.
     """
-    history: dict[str, list[dict]] = {t: [] for t in pd.concat([df["home_team"], df["away_team"]]).unique()}
+    all_teams = pd.concat([df["home_team"], df["away_team"]]).unique()
+    history: dict[str, list[dict]] = {t: [] for t in all_teams}
 
     for _, row in df.iterrows():
         ht, at = row["home_team"], row["away_team"]
@@ -160,14 +162,15 @@ def compute_team_features(df: pd.DataFrame) -> pd.DataFrame:
 
         if len(h2h):
             # From home-team perspective
-            home_h2h_wins = ((h2h["home_team"] == ht) & (h2h["result"] == "H")).sum() + \
-                            ((h2h["away_team"] == ht) & (h2h["result"] == "A")).sum()
-            away_h2h_wins = len(h2h) - home_h2h_wins - \
-                            ((h2h["result"] == "D").sum())
-            h2h_win_rate  = home_h2h_wins / len(h2h)
+            home_h2h_wins = (
+                ((h2h["home_team"] == ht) & (h2h["result"] == "H")).sum()
+                + ((h2h["away_team"] == ht) & (h2h["result"] == "A")).sum()
+            )
+            away_h2h_wins = len(h2h) - home_h2h_wins - (h2h["result"] == "D").sum()
+            h2h_win_rate = home_h2h_wins / len(h2h)
         else:
             home_h2h_wins = away_h2h_wins = np.nan
-            h2h_win_rate  = np.nan
+            h2h_win_rate = np.nan
 
         # ── Home advantage ────────────────────────────────────────────────────
         home_advantage = 1  # Always 1 for home side; separate feature
@@ -202,15 +205,21 @@ def compute_team_features(df: pd.DataFrame) -> pd.DataFrame:
             "away_goal_diff":         away_gd,
 
             # Comparative features
-            "form_diff":              (home_form - away_form)
-                                       if not any(pd.isna(x) for x in [home_form, away_form])
-                                       else np.nan,
-            "scored_diff":            (home_avg_scored - away_avg_scored)
-                                       if not any(pd.isna(x) for x in [home_avg_scored, away_avg_scored])
-                                       else np.nan,
-            "conceded_diff":          (home_avg_conceded - away_avg_conceded)
-                                       if not any(pd.isna(x) for x in [home_avg_conceded, away_avg_conceded])
-                                       else np.nan,
+            "form_diff": (
+                (home_form - away_form)
+                if not any(pd.isna(x) for x in [home_form, away_form])
+                else np.nan
+            ),
+            "scored_diff": (
+                (home_avg_scored - away_avg_scored)
+                if not any(pd.isna(x) for x in [home_avg_scored, away_avg_scored])
+                else np.nan
+            ),
+            "conceded_diff": (
+                (home_avg_conceded - away_avg_conceded)
+                if not any(pd.isna(x) for x in [home_avg_conceded, away_avg_conceded])
+                else np.nan
+            ),
 
             # H2H
             "h2h_home_wins":          home_h2h_wins,

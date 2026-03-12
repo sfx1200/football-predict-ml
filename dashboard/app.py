@@ -53,7 +53,7 @@ def load_predictor(model_name: str):
     try:
         from predict import get_predictor
         return get_predictor(model_name)
-    except Exception as exc:
+    except Exception:
         return None
 
 
@@ -189,7 +189,9 @@ elif page == "🔮 Predict Match":
                 x=[f"{home_team} Win", "Draw", f"{away_team} Win"],
                 y=[result["home_win"], result["draw"], result["away_win"]],
                 marker_color=["steelblue", "orange", "coral"],
-                text=[f"{v*100:.1f}%" for v in [result["home_win"], result["draw"], result["away_win"]]],
+                text=[f"{v * 100:.1f}%" for v in [
+                    result["home_win"], result["draw"], result["away_win"]
+                ]],
                 textposition="outside",
             ))
             fig.update_layout(
@@ -220,11 +222,11 @@ elif page == "📊 Team Stats":
     total = len(team_home) + len(team_away)
     home_wins = (team_home["result"] == "H").sum()
     away_wins = (team_away["result"] == "A").sum()
-    draws_h   = (team_home["result"] == "D").sum()
-    draws_a   = (team_away["result"] == "D").sum()
-    total_wins  = home_wins + away_wins
+    draws_h = (team_home["result"] == "D").sum()
+    draws_a = (team_away["result"] == "D").sum()
+    total_wins = home_wins + away_wins
     total_draws = draws_h + draws_a
-    total_losses= total - total_wins - total_draws
+    total_losses = total - total_wins - total_draws
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Matches Played", total)

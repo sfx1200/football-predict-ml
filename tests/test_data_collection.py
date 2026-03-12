@@ -3,11 +3,10 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from data_collection import SyntheticDataGenerator
+from data_collection import SyntheticDataGenerator  # noqa: E402
 
 
 class TestSyntheticDataGenerator:
@@ -50,7 +49,7 @@ class TestSyntheticDataGenerator:
         df = self.gen.generate_season(n_matchdays=5)
         home_wins = df[df["result"] == "H"]
         away_wins = df[df["result"] == "A"]
-        draws     = df[df["result"] == "D"]
+        draws = df[df["result"] == "D"]
         assert (home_wins["home_goals"] > home_wins["away_goals"]).all()
         assert (away_wins["away_goals"] > away_wins["home_goals"]).all()
         assert (draws["home_goals"] == draws["away_goals"]).all()
