@@ -293,7 +293,7 @@ elif page == "📈 Model Insights":
         tabs = st.tabs(tab_labels)
         for tab, label in zip(tabs, tab_labels):
             with tab:
-                st.image(str(tabs_map[label]), use_container_width=True)
+                st.image(str(tabs_map[label]), use_column_width=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
