@@ -35,30 +35,6 @@ RAW_DATA_DIR = Path("data/raw")
 SEASON = "2025"
 LEAGUE_ID = 39  # Premier League on api-football
 
-PL_TEAMS_2025 = [
-    "Arsenal",
-    "Aston Villa",
-    "Bournemouth",
-    "Brentford",
-    "Brighton",
-    "Burnley",
-    "Chelsea",
-    "Crystal Palace",
-    "Everton",
-    "Fulham",
-    "Leeds United",
-    "Liverpool",
-    "Manchester City",
-    "Manchester United",
-    "Newcastle United",
-    "Nottingham Forest",
-    "Sunderland",
-    "Tottenham",
-    "West Ham",
-    "Wolves",
-]
-
-
 # ── API Client ─────────────────────────────────────────────────────────────────
 
 

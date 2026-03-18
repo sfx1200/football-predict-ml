@@ -26,31 +26,9 @@ from pydantic import BaseModel, field_validator
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from predict import get_predictor, MatchPredictor  # noqa: E402
+from constants import PL_TEAMS  # noqa: E402
 
 logger = logging.getLogger("uvicorn.error")
-
-PL_TEAMS = [
-    "Arsenal",
-    "Aston Villa",
-    "Bournemouth",
-    "Brentford",
-    "Brighton",
-    "Chelsea",
-    "Crystal Palace",
-    "Everton",
-    "Fulham",
-    "Ipswich Town",
-    "Leicester City",
-    "Liverpool",
-    "Manchester City",
-    "Manchester United",
-    "Newcastle United",
-    "Nottingham Forest",
-    "Southampton",
-    "Tottenham",
-    "West Ham",
-    "Wolves",
-]
 
 AVAILABLE_MODELS = ["xgboost", "random_forest"]
 

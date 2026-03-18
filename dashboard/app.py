@@ -11,6 +11,8 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from constants import PL_TEAMS  # noqa: E402
+
 st.set_page_config(
     page_title="PL Predictor · 2025-26",
     page_icon="⚽",
@@ -192,29 +194,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 )
 
 # ── Constants ───────────────────────────────────────────────────────────────────
-PL_TEAMS = [
-    "Arsenal",
-    "Aston Villa",
-    "Bournemouth",
-    "Brentford",
-    "Brighton",
-    "Burnley",
-    "Chelsea",
-    "Crystal Palace",
-    "Everton",
-    "Fulham",
-    "Leeds United",
-    "Liverpool",
-    "Manchester City",
-    "Manchester United",
-    "Newcastle United",
-    "Nottingham Forest",
-    "Sunderland",
-    "Tottenham",
-    "West Ham",
-    "Wolves",
-]
-
 TEAM_COLORS = {
     "Arsenal": "#EF0107",
     "Aston Villa": "#670E36",
@@ -252,7 +231,7 @@ PLOTLY_BASE = dict(
 
 
 # ── Data helpers ────────────────────────────────────────────────────────────────
-@st.cache_data(ttl=300)
+@st.cache_data
 def load_features():
     path = PROCESSED_DIR / "features.csv"
     if path.exists():
@@ -270,33 +249,35 @@ def load_predictor(model_name: str):
         return None
 
 
+@st.cache_resource
 def models_available():
     return [n for n in ["xgboost", "random_forest"] if (MODELS_DIR / f"{n}.joblib").exists()]
 
 
+@st.cache_data
 def league_table(df: pd.DataFrame) -> pd.DataFrame:
-    rows = []
-    for _, row in df.iterrows():
-        for team, gf, gc, is_home in [
-            (row["home_team"], row["home_goals"], row["away_goals"], True),
-            (row["away_team"], row["away_goals"], row["home_goals"], False),
-        ]:
-            res = row["result"]
-            won = (res == "H" and is_home) or (res == "A" and not is_home)
-            drawn = res == "D"
-            rows.append(
-                {
-                    "team": team,
-                    "gf": gf,
-                    "gc": gc,
-                    "won": int(won),
-                    "drawn": int(drawn),
-                    "lost": int(not won and not drawn),
-                    "cs": int(gc == 0),
-                }
-            )
+    home = df.assign(
+        team=df["home_team"],
+        gf=df["home_goals"],
+        gc=df["away_goals"],
+        won=(df["result"] == "H").astype(int),
+        drawn=(df["result"] == "D").astype(int),
+        lost=(df["result"] == "A").astype(int),
+        cs=(df["away_goals"] == 0).astype(int),
+    )[["team", "gf", "gc", "won", "drawn", "lost", "cs"]]
+
+    away = df.assign(
+        team=df["away_team"],
+        gf=df["away_goals"],
+        gc=df["home_goals"],
+        won=(df["result"] == "A").astype(int),
+        drawn=(df["result"] == "D").astype(int),
+        lost=(df["result"] == "H").astype(int),
+        cs=(df["home_goals"] == 0).astype(int),
+    )[["team", "gf", "gc", "won", "drawn", "lost", "cs"]]
+
     t = (
-        pd.DataFrame(rows)
+        pd.concat([home, away], ignore_index=True)
         .groupby("team")
         .agg(
             P=("gf", "count"),
@@ -315,24 +296,21 @@ def league_table(df: pd.DataFrame) -> pd.DataFrame:
     return t
 
 
+@st.cache_data
 def team_last_5(df: pd.DataFrame, team: str) -> str:
     matches = df[(df["home_team"] == team) | (df["away_team"] == team)].sort_values("date").tail(5)
-    results = []
-    for _, r in matches.iterrows():
-        is_home = r["home_team"] == team
-        if r["result"] == "H":
-            results.append("W" if is_home else "L")
-        elif r["result"] == "A":
-            results.append("L" if is_home else "W")
-        else:
-            results.append("D")
+    is_home = matches["home_team"] == team
+    outcome = pd.Series("D", index=matches.index)
+    outcome[(matches["result"] == "H") & is_home] = "W"
+    outcome[(matches["result"] == "A") & ~is_home] = "W"
+    outcome[(matches["result"] == "H") & ~is_home] = "L"
+    outcome[(matches["result"] == "A") & is_home] = "L"
     color_map = {"W": "#4ec97a", "D": "#f6c343", "L": "#e05555"}
-    badges = "".join(
+    return "".join(
         f"<span style='background:{color_map[r]};color:#0b0f1a;font-size:0.65rem;"
         f"font-weight:700;padding:2px 6px;border-radius:4px;margin:1px;'>{r}</span>"
-        for r in results
+        for r in outcome
     )
-    return badges
 
 
 # ── Sidebar ─────────────────────────────────────────────────────────────────────
