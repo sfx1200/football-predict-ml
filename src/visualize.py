@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 PROCESSED_DIR = Path("data/processed")
-PLOTS_DIR     = Path("models/plots")
+PLOTS_DIR = Path("models/plots")
 
 sns.set_theme(style="whitegrid", palette="tab10")
 
@@ -31,7 +31,8 @@ def plot_team_form_trend(df: pd.DataFrame, teams: list[str] | None = None):
     if teams is None:
         # Pick top 6 by final form
         teams = (
-            df.sort_values("date").groupby("home_team")["home_form"]
+            df.sort_values("date")
+            .groupby("home_team")["home_form"]
             .last()
             .sort_values(ascending=False)
             .head(6)
@@ -114,11 +115,17 @@ def plot_correlation_heatmap(df: pd.DataFrame):
     mask = pd.DataFrame(False, index=corr.index, columns=corr.columns)
     # Upper triangle mask
     import numpy as np
+
     mask.values[np.triu_indices_from(mask, k=1)] = True
 
     sns.heatmap(
-        corr, mask=mask, annot=False, cmap="RdBu_r",
-        center=0, linewidths=0.3, ax=ax,
+        corr,
+        mask=mask,
+        annot=False,
+        cmap="RdBu_r",
+        center=0,
+        linewidths=0.3,
+        ax=ax,
     )
     ax.set_title("Feature Correlation Heatmap", fontsize=14)
     plt.tight_layout()

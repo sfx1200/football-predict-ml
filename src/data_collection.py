@@ -36,15 +36,31 @@ SEASON = "2025"
 LEAGUE_ID = 39  # Premier League on api-football
 
 PL_TEAMS_2025 = [
-    "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
-    "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fulham",
-    "Leeds United", "Liverpool", "Manchester City", "Manchester United",
-    "Newcastle United", "Nottingham Forest", "Sunderland", "Tottenham",
-    "West Ham", "Wolves",
+    "Arsenal",
+    "Aston Villa",
+    "Bournemouth",
+    "Brentford",
+    "Brighton",
+    "Burnley",
+    "Chelsea",
+    "Crystal Palace",
+    "Everton",
+    "Fulham",
+    "Leeds United",
+    "Liverpool",
+    "Manchester City",
+    "Manchester United",
+    "Newcastle United",
+    "Nottingham Forest",
+    "Sunderland",
+    "Tottenham",
+    "West Ham",
+    "Wolves",
 ]
 
 
 # ── API Client ─────────────────────────────────────────────────────────────────
+
 
 class FootballDataClient:
     """Client for football-data.org free API (no key required for basic use)."""
@@ -80,17 +96,19 @@ class FootballDataClient:
             home_goals = full_time.get("home")
             away_goals = full_time.get("away")
 
-            records.append({
-                "match_id": m.get("id"),
-                "date": m.get("utcDate", "")[:10],
-                "home_team": m["homeTeam"]["name"],
-                "away_team": m["awayTeam"]["name"],
-                "home_goals": home_goals,
-                "away_goals": away_goals,
-                "status": m.get("status"),
-                "matchday": m.get("matchday"),
-                "stage": m.get("stage"),
-            })
+            records.append(
+                {
+                    "match_id": m.get("id"),
+                    "date": m.get("utcDate", "")[:10],
+                    "home_team": m["homeTeam"]["name"],
+                    "away_team": m["awayTeam"]["name"],
+                    "home_goals": home_goals,
+                    "away_goals": away_goals,
+                    "status": m.get("status"),
+                    "matchday": m.get("matchday"),
+                    "stage": m.get("stage"),
+                }
+            )
 
         df = pd.DataFrame(records)
         logger.info("Parsed %d match records", len(df))
@@ -98,6 +116,7 @@ class FootballDataClient:
 
 
 # ── Synthetic Data Generator ───────────────────────────────────────────────────
+
 
 class SyntheticDataGenerator:
     """
@@ -109,26 +128,26 @@ class SyntheticDataGenerator:
         self.rng = np.random.default_rng(seed)
         # Relative strengths (higher = stronger attack/defense)
         self.team_strength = {
-            "Manchester City":  {"attack": 0.95, "defense": 0.90},
-            "Liverpool":        {"attack": 0.93, "defense": 0.89},
-            "Arsenal":          {"attack": 0.89, "defense": 0.88},
-            "Chelsea":          {"attack": 0.83, "defense": 0.80},
-            "Tottenham":        {"attack": 0.81, "defense": 0.75},
+            "Manchester City": {"attack": 0.95, "defense": 0.90},
+            "Liverpool": {"attack": 0.93, "defense": 0.89},
+            "Arsenal": {"attack": 0.89, "defense": 0.88},
+            "Chelsea": {"attack": 0.83, "defense": 0.80},
+            "Tottenham": {"attack": 0.81, "defense": 0.75},
             "Manchester United": {"attack": 0.78, "defense": 0.74},
             "Newcastle United": {"attack": 0.79, "defense": 0.79},
-            "Aston Villa":      {"attack": 0.78, "defense": 0.77},
-            "Brighton":         {"attack": 0.74, "defense": 0.72},
+            "Aston Villa": {"attack": 0.78, "defense": 0.77},
+            "Brighton": {"attack": 0.74, "defense": 0.72},
             "Nottingham Forest": {"attack": 0.65, "defense": 0.72},
-            "Fulham":           {"attack": 0.67, "defense": 0.66},
-            "Brentford":        {"attack": 0.68, "defense": 0.67},
-            "West Ham":         {"attack": 0.67, "defense": 0.65},
-            "Crystal Palace":   {"attack": 0.63, "defense": 0.63},
-            "Bournemouth":      {"attack": 0.65, "defense": 0.63},
-            "Everton":          {"attack": 0.61, "defense": 0.60},
-            "Wolves":           {"attack": 0.63, "defense": 0.62},
-            "Leeds United":     {"attack": 0.68, "defense": 0.64},
-            "Burnley":          {"attack": 0.60, "defense": 0.59},
-            "Sunderland":       {"attack": 0.59, "defense": 0.58},
+            "Fulham": {"attack": 0.67, "defense": 0.66},
+            "Brentford": {"attack": 0.68, "defense": 0.67},
+            "West Ham": {"attack": 0.67, "defense": 0.65},
+            "Crystal Palace": {"attack": 0.63, "defense": 0.63},
+            "Bournemouth": {"attack": 0.65, "defense": 0.63},
+            "Everton": {"attack": 0.61, "defense": 0.60},
+            "Wolves": {"attack": 0.63, "defense": 0.62},
+            "Leeds United": {"attack": 0.68, "defense": 0.64},
+            "Burnley": {"attack": 0.60, "defense": 0.59},
+            "Sunderland": {"attack": 0.59, "defense": 0.58},
         }
 
     def _simulate_match(
@@ -159,9 +178,7 @@ class SyntheticDataGenerator:
 
         # Possession (roughly correlated with strength)
         total_str = home_str["attack"] + away_str["attack"]
-        home_poss = round(
-            (home_str["attack"] / total_str) * 100 * self.rng.uniform(0.85, 1.15)
-        )
+        home_poss = round((home_str["attack"] / total_str) * 100 * self.rng.uniform(0.85, 1.15))
         home_poss = max(30, min(70, home_poss))
         away_poss = 100 - home_poss
 
@@ -214,13 +231,12 @@ class SyntheticDataGenerator:
                 records.append(self._simulate_match(home, away, match_date, matchday))
 
         df = pd.DataFrame(records)
-        logger.info(
-            "Generated %d synthetic matches across %d matchdays", len(df), n_matchdays
-        )
+        logger.info("Generated %d synthetic matches across %d matchdays", len(df), n_matchdays)
         return df
 
 
 # ── Orchestrator ───────────────────────────────────────────────────────────────
+
 
 def collect_data(use_synthetic: bool = False) -> pd.DataFrame:
     """

@@ -1,4 +1,5 @@
 """Tests for the FastAPI prediction service."""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -46,25 +47,34 @@ class TestTeamsEndpoint:
 
 class TestPredictEndpoint:
     def test_invalid_team_returns_422(self):
-        resp = client.post("/predict", json={
-            "home_team": "Not A Team",
-            "away_team": "Arsenal",
-        })
+        resp = client.post(
+            "/predict",
+            json={
+                "home_team": "Not A Team",
+                "away_team": "Arsenal",
+            },
+        )
         assert resp.status_code == 422
 
     def test_same_team_returns_422(self):
-        resp = client.post("/predict", json={
-            "home_team": "Arsenal",
-            "away_team": "Arsenal",
-        })
+        resp = client.post(
+            "/predict",
+            json={
+                "home_team": "Arsenal",
+                "away_team": "Arsenal",
+            },
+        )
         assert resp.status_code == 422
 
     def test_valid_request_structure(self):
         """Verify response schema is correct (model may not be loaded in CI)."""
-        resp = client.post("/predict", json={
-            "home_team": "Arsenal",
-            "away_team": "Liverpool",
-        })
+        resp = client.post(
+            "/predict",
+            json={
+                "home_team": "Arsenal",
+                "away_team": "Liverpool",
+            },
+        )
         # Either 200 (if model loaded) or 503 (model not yet trained)
         assert resp.status_code in (200, 503)
         if resp.status_code == 200:

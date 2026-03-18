@@ -1,4 +1,5 @@
 """Tests for feature_engineering module."""
+
 import sys
 from pathlib import Path
 
@@ -14,8 +15,11 @@ def make_clean_df(n_matchdays: int = 10) -> pd.DataFrame:
     """Create a minimal clean DataFrame for feature engineering tests."""
     from data_collection import SyntheticDataGenerator
     from data_cleaning import (
-        standardise_team_names, convert_dates, cast_numeric_columns,
-        filter_finished_matches, add_result_column,
+        standardise_team_names,
+        convert_dates,
+        cast_numeric_columns,
+        filter_finished_matches,
+        add_result_column,
     )
 
     gen = SyntheticDataGenerator(seed=99)

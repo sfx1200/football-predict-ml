@@ -1,4 +1,5 @@
 """Tests for data_collection module."""
+
 import sys
 from pathlib import Path
 
@@ -25,8 +26,12 @@ class TestSyntheticDataGenerator:
     def test_required_columns(self):
         df = self.gen.generate_season(n_matchdays=2)
         required = [
-            "date", "home_team", "away_team",
-            "home_goals", "away_goals", "result",
+            "date",
+            "home_team",
+            "away_team",
+            "home_goals",
+            "away_goals",
+            "result",
         ]
         for col in required:
             assert col in df.columns, f"Missing column: {col}"

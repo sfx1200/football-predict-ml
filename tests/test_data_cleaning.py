@@ -1,4 +1,5 @@
 """Tests for data_cleaning module."""
+
 import sys
 from pathlib import Path
 
@@ -71,13 +72,15 @@ class TestCastNumericColumns:
 
 class TestRemoveDuplicates:
     def test_keeps_first(self):
-        df = pd.DataFrame({
-            "date": ["2025-08-16", "2025-08-16"],
-            "home_team": ["Arsenal", "Arsenal"],
-            "away_team": ["Chelsea", "Chelsea"],
-            "home_goals": [2, 2],
-            "away_goals": [0, 0],
-        })
+        df = pd.DataFrame(
+            {
+                "date": ["2025-08-16", "2025-08-16"],
+                "home_team": ["Arsenal", "Arsenal"],
+                "away_team": ["Chelsea", "Chelsea"],
+                "home_goals": [2, 2],
+                "away_goals": [0, 0],
+            }
+        )
         result = remove_duplicates(df)
         assert len(result) == 1
 
@@ -101,10 +104,12 @@ class TestAddResultColumn:
 
 class TestValidatePossession:
     def test_normalises_anomalous_rows(self):
-        df = pd.DataFrame({
-            "home_possession": [60.0],
-            "away_possession": [30.0],  # sum=90, not 100
-        })
+        df = pd.DataFrame(
+            {
+                "home_possession": [60.0],
+                "away_possession": [30.0],  # sum=90, not 100
+            }
+        )
         result = validate_possession(df)
         total = result["home_possession"] + result["away_possession"]
         assert abs(total.iloc[0] - 100) < 1

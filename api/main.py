@@ -30,11 +30,26 @@ from predict import get_predictor, MatchPredictor  # noqa: E402
 logger = logging.getLogger("uvicorn.error")
 
 PL_TEAMS = [
-    "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
-    "Chelsea", "Crystal Palace", "Everton", "Fulham", "Ipswich Town",
-    "Leicester City", "Liverpool", "Manchester City", "Manchester United",
-    "Newcastle United", "Nottingham Forest", "Southampton", "Tottenham",
-    "West Ham", "Wolves",
+    "Arsenal",
+    "Aston Villa",
+    "Bournemouth",
+    "Brentford",
+    "Brighton",
+    "Chelsea",
+    "Crystal Palace",
+    "Everton",
+    "Fulham",
+    "Ipswich Town",
+    "Leicester City",
+    "Liverpool",
+    "Manchester City",
+    "Manchester United",
+    "Newcastle United",
+    "Nottingham Forest",
+    "Southampton",
+    "Tottenham",
+    "West Ham",
+    "Wolves",
 ]
 
 AVAILABLE_MODELS = ["xgboost", "random_forest"]
@@ -77,6 +92,7 @@ app.add_middleware(
 
 # ── Schemas ────────────────────────────────────────────────────────────────────
 
+
 class PredictRequest(BaseModel):
     home_team: str
     away_team: str
@@ -86,9 +102,7 @@ class PredictRequest(BaseModel):
     @classmethod
     def validate_team(cls, v: str) -> str:
         if v not in PL_TEAMS:
-            raise ValueError(
-                f"Unknown team '{v}'. Valid teams: {PL_TEAMS}"
-            )
+            raise ValueError(f"Unknown team '{v}'. Valid teams: {PL_TEAMS}")
         return v
 
     @field_validator("away_team")
@@ -114,6 +128,7 @@ class BatchPredictRequest(BaseModel):
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
+
 
 @app.get("/", tags=["Health"])
 def health_check():
@@ -152,7 +167,7 @@ def predict_match(request: PredictRequest):
             raise HTTPException(
                 status_code=503,
                 detail=f"Model '{request.model}' is not trained yet. "
-                       "Run `python src/train_model.py` first.",
+                "Run `python src/train_model.py` first.",
             )
 
     predictor = _predictors[request.model]
@@ -177,4 +192,5 @@ def predict_batch(request: BatchPredictRequest):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

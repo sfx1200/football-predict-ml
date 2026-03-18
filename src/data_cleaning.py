@@ -43,10 +43,14 @@ TEAM_NAME_MAP: dict[str, str] = {
 }
 
 NUMERIC_COLS = [
-    "home_goals", "away_goals",
-    "home_shots", "away_shots",
-    "home_shots_on_target", "away_shots_on_target",
-    "home_possession", "away_possession",
+    "home_goals",
+    "away_goals",
+    "home_shots",
+    "away_shots",
+    "home_shots_on_target",
+    "away_shots_on_target",
+    "home_possession",
+    "away_possession",
     "matchday",
 ]
 
@@ -119,7 +123,8 @@ def filter_finished_matches(df: pd.DataFrame) -> pd.DataFrame:
         df = df[df["status"] == "FINISHED"]
         logger.info(
             "Kept %d finished matches (dropped %d unfinished).",
-            len(df), before - len(df),
+            len(df),
+            before - len(df),
         )
 
     # Drop rows where both goal columns are NaN
@@ -184,7 +189,8 @@ def clean_data(raw_path: Path | None = None) -> pd.DataFrame:
     df.to_csv(output_path, index=False)
     logger.info(
         "Cleaned data saved to %s (%d rows, %d columns).",
-        output_path, *df.shape,
+        output_path,
+        *df.shape,
     )
     return df
 

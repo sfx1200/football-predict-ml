@@ -23,9 +23,9 @@ class MatchPredictor:
 
     def __init__(self, model_name: str = "xgboost"):
         self.model_name = model_name
-        self.model      = joblib.load(MODELS_DIR / f"{model_name}.joblib")
-        self.le         = joblib.load(MODELS_DIR / "label_encoder.joblib")
-        self.feat_cols  = joblib.load(MODELS_DIR / "feature_cols.joblib")
+        self.model = joblib.load(MODELS_DIR / f"{model_name}.joblib")
+        self.le = joblib.load(MODELS_DIR / "label_encoder.joblib")
+        self.feat_cols = joblib.load(MODELS_DIR / "feature_cols.joblib")
         self._feature_df = self._load_feature_df()
         logger.info("MatchPredictor loaded model: %s", model_name)
 
@@ -66,9 +66,7 @@ class MatchPredictor:
         try:
             row["form_diff"] = row.get("home_form", 0) - row.get("away_form", 0)
             row["scored_diff"] = row.get("home_avg_scored", 0) - row.get("away_avg_scored", 0)
-            row["conceded_diff"] = (
-                row.get("home_avg_conceded", 0) - row.get("away_avg_conceded", 0)
-            )
+            row["conceded_diff"] = row.get("home_avg_conceded", 0) - row.get("away_avg_conceded", 0)
         except Exception:
             pass
 
@@ -82,8 +80,9 @@ class MatchPredictor:
 
         # Temporal
         import datetime
+
         now = datetime.datetime.now()
-        row["month"]       = now.month
+        row["month"] = now.month
         row["day_of_week"] = now.weekday()
 
         vec = pd.DataFrame([row])
@@ -112,13 +111,13 @@ class MatchPredictor:
         outcome_map = {"H": "Home Win", "D": "Draw", "A": "Away Win"}
 
         return {
-            "home_team":         home_team,
-            "away_team":         away_team,
-            "home_win":          round(float(prob_map.get("H", 0)), 4),
-            "draw":              round(float(prob_map.get("D", 0)), 4),
-            "away_win":          round(float(prob_map.get("A", 0)), 4),
+            "home_team": home_team,
+            "away_team": away_team,
+            "home_win": round(float(prob_map.get("H", 0)), 4),
+            "draw": round(float(prob_map.get("D", 0)), 4),
+            "away_win": round(float(prob_map.get("A", 0)), 4),
             "predicted_outcome": outcome_map.get(predicted_class, predicted_class),
-            "model_used":        self.model_name,
+            "model_used": self.model_name,
         }
 
 

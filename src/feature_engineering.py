@@ -35,6 +35,7 @@ FORM_WINDOW = 5  # matches to look back for form metrics
 
 # ── Utility helpers ────────────────────────────────────────────────────────────
 
+
 def _points_from_result(result: str, is_home: bool) -> int:
     """Convert a match result string to points for one side."""
     if result == "H":
@@ -53,26 +54,30 @@ def _build_team_history(df: pd.DataFrame) -> dict[str, list[dict]]:
 
     for _, row in df.iterrows():
         ht, at = row["home_team"], row["away_team"]
-        history[ht].append({
-            "date": row["date"],
-            "goals_scored": row["home_goals"],
-            "goals_conceded": row["away_goals"],
-            "shots": row.get("home_shots", np.nan),
-            "shots_on": row.get("home_shots_on_target", np.nan),
-            "result": row["result"],
-            "is_home": True,
-            "points": _points_from_result(row["result"], is_home=True),
-        })
-        history[at].append({
-            "date": row["date"],
-            "goals_scored": row["away_goals"],
-            "goals_conceded": row["home_goals"],
-            "shots": row.get("away_shots", np.nan),
-            "shots_on": row.get("away_shots_on_target", np.nan),
-            "result": row["result"],
-            "is_home": False,
-            "points": _points_from_result(row["result"], is_home=False),
-        })
+        history[ht].append(
+            {
+                "date": row["date"],
+                "goals_scored": row["home_goals"],
+                "goals_conceded": row["away_goals"],
+                "shots": row.get("home_shots", np.nan),
+                "shots_on": row.get("home_shots_on_target", np.nan),
+                "result": row["result"],
+                "is_home": True,
+                "points": _points_from_result(row["result"], is_home=True),
+            }
+        )
+        history[at].append(
+            {
+                "date": row["date"],
+                "goals_scored": row["away_goals"],
+                "goals_conceded": row["home_goals"],
+                "shots": row.get("away_shots", np.nan),
+                "shots_on": row.get("away_shots_on_target", np.nan),
+                "result": row["result"],
+                "is_home": False,
+                "points": _points_from_result(row["result"], is_home=False),
+            }
+        )
 
     # Keep sorted by date
     for team in history:
@@ -101,6 +106,7 @@ def _rolling_mean(matches: list[dict], key: str) -> float:
 
 # ── Feature builders ───────────────────────────────────────────────────────────
 
+
 def compute_team_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     For each match, compute pre-match features for both home and away teams.
@@ -121,24 +127,26 @@ def compute_team_features(df: pd.DataFrame) -> pd.DataFrame:
         away_form = _form_points(away_recent)
 
         # ── Rolling averages ───────────────────────────────────────────────────
-        home_avg_scored     = _rolling_mean(home_recent, "goals_scored")
-        home_avg_conceded   = _rolling_mean(home_recent, "goals_conceded")
-        away_avg_scored     = _rolling_mean(away_recent, "goals_scored")
-        away_avg_conceded   = _rolling_mean(away_recent, "goals_conceded")
+        home_avg_scored = _rolling_mean(home_recent, "goals_scored")
+        home_avg_conceded = _rolling_mean(home_recent, "goals_conceded")
+        away_avg_scored = _rolling_mean(away_recent, "goals_scored")
+        away_avg_conceded = _rolling_mean(away_recent, "goals_conceded")
 
-        home_avg_shots      = _rolling_mean(home_recent, "shots")
-        away_avg_shots      = _rolling_mean(away_recent, "shots")
-        home_avg_shots_on   = _rolling_mean(home_recent, "shots_on")
-        away_avg_shots_on   = _rolling_mean(away_recent, "shots_on")
+        home_avg_shots = _rolling_mean(home_recent, "shots")
+        away_avg_shots = _rolling_mean(away_recent, "shots")
+        home_avg_shots_on = _rolling_mean(home_recent, "shots_on")
+        away_avg_shots_on = _rolling_mean(away_recent, "shots_on")
 
         # ── Conversion rate (shots on target / shots) ─────────────────────────
         home_conversion = (
             home_avg_shots_on / home_avg_shots
-            if (home_avg_shots and home_avg_shots > 0) else np.nan
+            if (home_avg_shots and home_avg_shots > 0)
+            else np.nan
         )
         away_conversion = (
             away_avg_shots_on / away_avg_shots
-            if (away_avg_shots and away_avg_shots > 0) else np.nan
+            if (away_avg_shots and away_avg_shots > 0)
+            else np.nan
         )
 
         # ── Goal difference (rolling) ──────────────────────────────────────────
@@ -155,17 +163,18 @@ def compute_team_features(df: pd.DataFrame) -> pd.DataFrame:
 
         # ── Head-to-head (last 5 H2H meetings) ───────────────────────────────
         h2h = df[
-            (((df["home_team"] == ht) & (df["away_team"] == at)) |
-             ((df["home_team"] == at) & (df["away_team"] == ht))) &
-            (df["date"] < date)
+            (
+                ((df["home_team"] == ht) & (df["away_team"] == at))
+                | ((df["home_team"] == at) & (df["away_team"] == ht))
+            )
+            & (df["date"] < date)
         ].tail(5)
 
         if len(h2h):
             # From home-team perspective
-            home_h2h_wins = (
-                ((h2h["home_team"] == ht) & (h2h["result"] == "H")).sum()
-                + ((h2h["away_team"] == ht) & (h2h["result"] == "A")).sum()
-            )
+            home_h2h_wins = ((h2h["home_team"] == ht) & (h2h["result"] == "H")).sum() + (
+                (h2h["away_team"] == ht) & (h2h["result"] == "A")
+            ).sum()
             away_h2h_wins = len(h2h) - home_h2h_wins - (h2h["result"] == "D").sum()
             h2h_win_rate = home_h2h_wins / len(h2h)
         else:
@@ -177,33 +186,29 @@ def compute_team_features(df: pd.DataFrame) -> pd.DataFrame:
 
         record = {
             # Identifiers
-            "match_id":          row.get("match_id"),
-            "date":              date,
-            "matchday":          row.get("matchday"),
-            "home_team":         ht,
-            "away_team":         at,
-
+            "match_id": row.get("match_id"),
+            "date": date,
+            "matchday": row.get("matchday"),
+            "home_team": ht,
+            "away_team": at,
             # Target
-            "result":            row["result"],
-
+            "result": row["result"],
             # Home features
-            "home_form":              home_form,
-            "home_avg_scored":        home_avg_scored,
-            "home_avg_conceded":      home_avg_conceded,
-            "home_avg_shots":         home_avg_shots,
-            "home_avg_shots_on":      home_avg_shots_on,
-            "home_conversion_rate":   home_conversion,
-            "home_goal_diff":         home_gd,
-
+            "home_form": home_form,
+            "home_avg_scored": home_avg_scored,
+            "home_avg_conceded": home_avg_conceded,
+            "home_avg_shots": home_avg_shots,
+            "home_avg_shots_on": home_avg_shots_on,
+            "home_conversion_rate": home_conversion,
+            "home_goal_diff": home_gd,
             # Away features
-            "away_form":              away_form,
-            "away_avg_scored":        away_avg_scored,
-            "away_avg_conceded":      away_avg_conceded,
-            "away_avg_shots":         away_avg_shots,
-            "away_avg_shots_on":      away_avg_shots_on,
-            "away_conversion_rate":   away_conversion,
-            "away_goal_diff":         away_gd,
-
+            "away_form": away_form,
+            "away_avg_scored": away_avg_scored,
+            "away_avg_conceded": away_avg_conceded,
+            "away_avg_shots": away_avg_shots,
+            "away_avg_shots_on": away_avg_shots_on,
+            "away_conversion_rate": away_conversion,
+            "away_goal_diff": away_gd,
             # Comparative features
             "form_diff": (
                 (home_form - away_form)
@@ -220,34 +225,29 @@ def compute_team_features(df: pd.DataFrame) -> pd.DataFrame:
                 if not any(pd.isna(x) for x in [home_avg_conceded, away_avg_conceded])
                 else np.nan
             ),
-
             # H2H
-            "h2h_home_wins":          home_h2h_wins,
-            "h2h_away_wins":          away_h2h_wins,
-            "h2h_win_rate":           h2h_win_rate,
-
+            "h2h_home_wins": home_h2h_wins,
+            "h2h_away_wins": away_h2h_wins,
+            "h2h_win_rate": h2h_win_rate,
             # Raw match stats
-            "home_goals":             row["home_goals"],
-            "away_goals":             row["away_goals"],
-            "home_shots":             row.get("home_shots", np.nan),
-            "away_shots":             row.get("away_shots", np.nan),
-            "home_shots_on_target":   row.get("home_shots_on_target", np.nan),
-            "away_shots_on_target":   row.get("away_shots_on_target", np.nan),
-            "home_possession":        row.get("home_possession", np.nan),
-            "away_possession":        row.get("away_possession", np.nan),
-
+            "home_goals": row["home_goals"],
+            "away_goals": row["away_goals"],
+            "home_shots": row.get("home_shots", np.nan),
+            "away_shots": row.get("away_shots", np.nan),
+            "home_shots_on_target": row.get("home_shots_on_target", np.nan),
+            "away_shots_on_target": row.get("away_shots_on_target", np.nan),
+            "home_possession": row.get("home_possession", np.nan),
+            "away_possession": row.get("away_possession", np.nan),
             # Calendar
             "home_advantage": home_advantage,
-            "month":          row.get("month"),
-            "day_of_week":    row.get("day_of_week"),
+            "month": row.get("month"),
+            "day_of_week": row.get("day_of_week"),
         }
 
         records.append(record)
 
     feature_df = pd.DataFrame(records)
-    logger.info(
-        "Feature matrix built: %d rows, %d columns.", *feature_df.shape
-    )
+    logger.info("Feature matrix built: %d rows, %d columns.", *feature_df.shape)
     return feature_df
 
 

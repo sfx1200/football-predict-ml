@@ -19,7 +19,8 @@ st.set_page_config(
 )
 
 # ── Global CSS ──────────────────────────────────────────────────────────────────
-st.markdown("""
+st.markdown(
+    """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -186,38 +187,55 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .pill-ok  { background: #0f2a1a; color: #4ec97a; border: 1px solid #1a4a2a; }
 .pill-err { background: #2a0f0f; color: #e05555; border: 1px solid #4a1a1a; }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ── Constants ───────────────────────────────────────────────────────────────────
 PL_TEAMS = [
-    "Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton",
-    "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fulham",
-    "Leeds United", "Liverpool", "Manchester City", "Manchester United",
-    "Newcastle United", "Nottingham Forest", "Sunderland", "Tottenham",
-    "West Ham", "Wolves",
+    "Arsenal",
+    "Aston Villa",
+    "Bournemouth",
+    "Brentford",
+    "Brighton",
+    "Burnley",
+    "Chelsea",
+    "Crystal Palace",
+    "Everton",
+    "Fulham",
+    "Leeds United",
+    "Liverpool",
+    "Manchester City",
+    "Manchester United",
+    "Newcastle United",
+    "Nottingham Forest",
+    "Sunderland",
+    "Tottenham",
+    "West Ham",
+    "Wolves",
 ]
 
 TEAM_COLORS = {
-    "Arsenal":           "#EF0107",
-    "Aston Villa":       "#670E36",
-    "Bournemouth":       "#DA291C",
-    "Brentford":         "#E30613",
-    "Brighton":          "#0057B8",
-    "Burnley":           "#6C1D45",
-    "Chelsea":           "#034694",
-    "Crystal Palace":    "#1B458F",
-    "Everton":           "#003399",
-    "Fulham":            "#000000",
-    "Leeds United":      "#FFCD00",
-    "Liverpool":         "#C8102E",
-    "Manchester City":   "#6CABDD",
+    "Arsenal": "#EF0107",
+    "Aston Villa": "#670E36",
+    "Bournemouth": "#DA291C",
+    "Brentford": "#E30613",
+    "Brighton": "#0057B8",
+    "Burnley": "#6C1D45",
+    "Chelsea": "#034694",
+    "Crystal Palace": "#1B458F",
+    "Everton": "#003399",
+    "Fulham": "#000000",
+    "Leeds United": "#FFCD00",
+    "Liverpool": "#C8102E",
+    "Manchester City": "#6CABDD",
     "Manchester United": "#DA291C",
-    "Newcastle United":  "#241F20",
+    "Newcastle United": "#241F20",
     "Nottingham Forest": "#DD0000",
-    "Sunderland":        "#EB172B",
-    "Tottenham":         "#132257",
-    "West Ham":          "#7A263A",
-    "Wolves":            "#FDB913",
+    "Sunderland": "#EB172B",
+    "Tottenham": "#132257",
+    "West Ham": "#7A263A",
+    "Wolves": "#FDB913",
 }
 
 MODELS_DIR = Path("models")
@@ -246,6 +264,7 @@ def load_features():
 def load_predictor(model_name: str):
     try:
         from predict import get_predictor
+
         return get_predictor(model_name)
     except Exception:
         return None
@@ -263,19 +282,30 @@ def league_table(df: pd.DataFrame) -> pd.DataFrame:
             (row["away_team"], row["away_goals"], row["home_goals"], False),
         ]:
             res = row["result"]
-            won   = (res == "H" and is_home) or (res == "A" and not is_home)
+            won = (res == "H" and is_home) or (res == "A" and not is_home)
             drawn = res == "D"
-            rows.append({
-                "team": team, "gf": gf, "gc": gc,
-                "won": int(won), "drawn": int(drawn),
-                "lost": int(not won and not drawn),
-                "cs": int(gc == 0),
-            })
+            rows.append(
+                {
+                    "team": team,
+                    "gf": gf,
+                    "gc": gc,
+                    "won": int(won),
+                    "drawn": int(drawn),
+                    "lost": int(not won and not drawn),
+                    "cs": int(gc == 0),
+                }
+            )
     t = (
-        pd.DataFrame(rows).groupby("team")
+        pd.DataFrame(rows)
+        .groupby("team")
         .agg(
-            P=("gf", "count"), W=("won", "sum"), D=("drawn", "sum"),
-            L=("lost", "sum"), GF=("gf", "sum"), GC=("gc", "sum"), CS=("cs", "sum"),
+            P=("gf", "count"),
+            W=("won", "sum"),
+            D=("drawn", "sum"),
+            L=("lost", "sum"),
+            GF=("gf", "sum"),
+            GC=("gc", "sum"),
+            CS=("cs", "sum"),
         )
         .assign(GD=lambda x: x.GF - x.GC, Pts=lambda x: x.W * 3 + x.D)
         .sort_values(["Pts", "GD", "GF"], ascending=False)
@@ -307,7 +337,8 @@ def team_last_5(df: pd.DataFrame, team: str) -> str:
 
 # ── Sidebar ─────────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("""
+    st.markdown(
+        """
     <div style='padding: 24px 0 20px 0;'>
         <div style='font-size:0.65rem; font-weight:700; letter-spacing:0.15em;
                     text-transform:uppercase; color:#3d5270; margin-bottom:10px;'>
@@ -319,7 +350,9 @@ with st.sidebar:
         <div style='font-size:0.75rem; color:#3d5270; margin-top:4px;'>2025 – 26 Season</div>
     </div>
     <div style='height:1px; background:#1a2535; margin-bottom:20px;'></div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     page = st.radio(
         "nav",
@@ -327,20 +360,24 @@ with st.sidebar:
         label_visibility="collapsed",
     )
 
-    st.markdown("""
+    st.markdown(
+        """
     <div style='height:1px; background:#1a2535; margin: 20px 0 16px 0;'></div>
     <div style='font-size:0.68rem; color:#2a3a50; line-height:1.7;'>
         XGBoost &amp; Random Forest<br>
         scikit-learn · pandas · FastAPI
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # OVERVIEW
 # ══════════════════════════════════════════════════════════════════════════════
 if page == "Overview":
-    st.markdown("""
+    st.markdown(
+        """
     <div class="hero">
         <div class="hero-eyebrow">2025 – 26 · Premier League</div>
         <div class="hero-title">Match outcome<br><em>prediction engine</em></div>
@@ -350,29 +387,34 @@ if page == "Overview":
             attacking/defensive strength to forecast Home Win · Draw · Away Win.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     df = load_features()
     avail = models_available()
 
-    total   = len(df) if df is not None else 0
-    hw      = int((df["result"] == "H").sum()) if df is not None else 0
-    draws   = int((df["result"] == "D").sum()) if df is not None else 0
-    aw      = int((df["result"] == "A").sum()) if df is not None else 0
+    total = len(df) if df is not None else 0
+    hw = int((df["result"] == "H").sum()) if df is not None else 0
+    draws = int((df["result"] == "D").sum()) if df is not None else 0
+    aw = int((df["result"] == "A").sum()) if df is not None else 0
 
     c1, c2, c3, c4 = st.columns(4)
     for col, lbl, val, sub, color in [
-        (c1, "Fixtures",   total,  "in dataset",              "#5b9bd5"),
-        (c2, "Home Wins",  hw,     f"{hw/total*100:.0f}% win rate" if total else "—", "#4ec97a"),
-        (c3, "Draws",      draws,  f"{draws/total*100:.0f}% of matches" if total else "—", "#f6c343"),
-        (c4, "Away Wins",  aw,     f"{aw/total*100:.0f}% win rate" if total else "—", "#e05555"),
+        (c1, "Fixtures", total, "in dataset", "#5b9bd5"),
+        (c2, "Home Wins", hw, f"{hw/total*100:.0f}% win rate" if total else "—", "#4ec97a"),
+        (c3, "Draws", draws, f"{draws/total*100:.0f}% of matches" if total else "—", "#f6c343"),
+        (c4, "Away Wins", aw, f"{aw/total*100:.0f}% win rate" if total else "—", "#e05555"),
     ]:
-        col.markdown(f"""
+        col.markdown(
+            f"""
         <div class="stat-card">
             <div class="label">{lbl}</div>
             <div class="val" style="color:{color};">{val}</div>
             <div class="sub">{sub}</div>
-        </div>""", unsafe_allow_html=True)
+        </div>""",
+            unsafe_allow_html=True,
+        )
 
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
@@ -381,43 +423,84 @@ if page == "Overview":
 
         with col_l:
             st.markdown("<div class='sec-head'>Goals per matchday</div>", unsafe_allow_html=True)
-            st.markdown("<div class='sec-sub'>Home and away goals across the season</div>", unsafe_allow_html=True)
+            st.markdown(
+                "<div class='sec-sub'>Home and away goals across the season</div>",
+                unsafe_allow_html=True,
+            )
 
-            md = df.groupby("matchday").agg(
-                home_goals=("home_goals", "sum"),
-                away_goals=("away_goals", "sum"),
-            ).reset_index()
+            md = (
+                df.groupby("matchday")
+                .agg(
+                    home_goals=("home_goals", "sum"),
+                    away_goals=("away_goals", "sum"),
+                )
+                .reset_index()
+            )
 
             fig = go.Figure()
-            fig.add_trace(go.Bar(x=md["matchday"], y=md["home_goals"],
-                                 name="Home", marker_color="#5b9bd5", opacity=0.9))
-            fig.add_trace(go.Bar(x=md["matchday"], y=md["away_goals"],
-                                 name="Away", marker_color="#e05555", opacity=0.9))
-            fig.update_layout(**PLOTLY_BASE, barmode="group", height=280,
-                              legend=dict(orientation="h", y=1.1, x=0, font=dict(size=11)),
-                              xaxis_title="Matchday", yaxis_title="Goals")
+            fig.add_trace(
+                go.Bar(
+                    x=md["matchday"],
+                    y=md["home_goals"],
+                    name="Home",
+                    marker_color="#5b9bd5",
+                    opacity=0.9,
+                )
+            )
+            fig.add_trace(
+                go.Bar(
+                    x=md["matchday"],
+                    y=md["away_goals"],
+                    name="Away",
+                    marker_color="#e05555",
+                    opacity=0.9,
+                )
+            )
+            fig.update_layout(
+                **PLOTLY_BASE,
+                barmode="group",
+                height=280,
+                legend=dict(orientation="h", y=1.1, x=0, font=dict(size=11)),
+                xaxis_title="Matchday",
+                yaxis_title="Goals",
+            )
             st.plotly_chart(fig, use_container_width=True)
 
         with col_r:
             st.markdown("<div class='sec-head'>Result split</div>", unsafe_allow_html=True)
-            st.markdown("<div class='sec-sub'>Distribution across all fixtures</div>", unsafe_allow_html=True)
+            st.markdown(
+                "<div class='sec-sub'>Distribution across all fixtures</div>",
+                unsafe_allow_html=True,
+            )
 
-            fig2 = go.Figure(go.Pie(
-                labels=["Home Win", "Draw", "Away Win"],
-                values=[hw, draws, aw],
-                hole=0.6,
-                marker=dict(colors=["#5b9bd5", "#f6c343", "#e05555"],
-                            line=dict(color="#0b0f1a", width=3)),
-                textinfo="percent",
-                textfont=dict(color="#e8eeff", size=12),
-            ))
+            fig2 = go.Figure(
+                go.Pie(
+                    labels=["Home Win", "Draw", "Away Win"],
+                    values=[hw, draws, aw],
+                    hole=0.6,
+                    marker=dict(
+                        colors=["#5b9bd5", "#f6c343", "#e05555"],
+                        line=dict(color="#0b0f1a", width=3),
+                    ),
+                    textinfo="percent",
+                    textfont=dict(color="#e8eeff", size=12),
+                )
+            )
             fig2.update_layout(
-                **PLOTLY_BASE, height=280, showlegend=True,
-                legend=dict(orientation="h", y=-0.12, x=0.5, xanchor="center",
-                            font=dict(size=11)),
-                annotations=[dict(text=f"{total}<br><span style='font-size:10px'>matches</span>",
-                                  x=0.5, y=0.5, font_size=16, font_color="#8897b4",
-                                  showarrow=False)],
+                **PLOTLY_BASE,
+                height=280,
+                showlegend=True,
+                legend=dict(orientation="h", y=-0.12, x=0.5, xanchor="center", font=dict(size=11)),
+                annotations=[
+                    dict(
+                        text=f"{total}<br><span style='font-size:10px'>matches</span>",
+                        x=0.5,
+                        y=0.5,
+                        font_size=16,
+                        font_color="#8897b4",
+                        showarrow=False,
+                    )
+                ],
             )
             st.plotly_chart(fig2, use_container_width=True)
 
@@ -439,8 +522,14 @@ if page == "Overview":
 # PREDICT
 # ══════════════════════════════════════════════════════════════════════════════
 elif page == "Predict":
-    st.markdown("<div class='sec-head' style='font-size:1.4rem;'>Match predictor</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sec-sub'>Select two teams and a model to get outcome probabilities.</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='sec-head' style='font-size:1.4rem;'>Match predictor</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<div class='sec-sub'>Select two teams and a model to get outcome probabilities.</div>",
+        unsafe_allow_html=True,
+    )
 
     avail = models_available()
     if not avail:
@@ -449,14 +538,23 @@ elif page == "Predict":
 
     col1, col2, col3 = st.columns([5, 5, 3])
     with col1:
-        st.markdown("<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#3d5270;margin-bottom:6px;'>Home team</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#3d5270;margin-bottom:6px;'>Home team</div>",
+            unsafe_allow_html=True,
+        )
         home_team = st.selectbox("Home", PL_TEAMS, index=0, label_visibility="collapsed")
     with col2:
-        st.markdown("<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#3d5270;margin-bottom:6px;'>Away team</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#3d5270;margin-bottom:6px;'>Away team</div>",
+            unsafe_allow_html=True,
+        )
         away_opts = [t for t in PL_TEAMS if t != home_team]
         away_team = st.selectbox("Away", away_opts, index=4, label_visibility="collapsed")
     with col3:
-        st.markdown("<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#3d5270;margin-bottom:6px;'>Model</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#3d5270;margin-bottom:6px;'>Model</div>",
+            unsafe_allow_html=True,
+        )
         model_choice = st.selectbox("Model", avail, label_visibility="collapsed")
 
     df = load_features()
@@ -489,15 +587,18 @@ elif page == "Predict":
                 res = predictor.predict(home_team, away_team)
 
             hw_p = res["home_win"]
-            d_p  = res["draw"]
+            d_p = res["draw"]
             aw_p = res["away_win"]
             outcome = res["predicted_outcome"]
 
             home_c = TEAM_COLORS.get(home_team, "#5b9bd5")
             away_c = TEAM_COLORS.get(away_team, "#e05555")
-            outcome_c = home_c if "Home" in outcome else ("#f6c343" if "Draw" in outcome else away_c)
+            outcome_c = (
+                home_c if "Home" in outcome else ("#f6c343" if "Draw" in outcome else away_c)
+            )
 
-            st.markdown(f"""
+            st.markdown(
+                f"""
             <div class="pred-box">
                 <div style='font-size:0.68rem;font-weight:700;letter-spacing:0.12em;
                             text-transform:uppercase;color:#3d5270;margin-bottom:10px;'>
@@ -508,38 +609,71 @@ elif page == "Predict":
                     {home_team} vs {away_team} &nbsp;·&nbsp; {model_choice.replace("_", " ").title()}
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
 
             st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
 
             # Probability bars (horizontal stacked)
             fig_bar = go.Figure()
-            fig_bar.add_trace(go.Bar(
-                y=[""], x=[hw_p * 100], orientation="h", name=f"{home_team}",
-                marker_color=home_c, opacity=0.85,
-                text=f"{hw_p*100:.1f}%", textposition="inside", insidetextanchor="middle",
-                textfont=dict(color="#fff", size=11, family="Inter"),
-            ))
-            fig_bar.add_trace(go.Bar(
-                y=[""], x=[d_p * 100], orientation="h", name="Draw",
-                marker_color="#f6c343", opacity=0.85,
-                text=f"{d_p*100:.1f}%", textposition="inside", insidetextanchor="middle",
-                textfont=dict(color="#0b0f1a", size=11, family="Inter"),
-            ))
-            fig_bar.add_trace(go.Bar(
-                y=[""], x=[aw_p * 100], orientation="h", name=f"{away_team}",
-                marker_color=away_c, opacity=0.85,
-                text=f"{aw_p*100:.1f}%", textposition="inside", insidetextanchor="middle",
-                textfont=dict(color="#fff", size=11, family="Inter"),
-            ))
+            fig_bar.add_trace(
+                go.Bar(
+                    y=[""],
+                    x=[hw_p * 100],
+                    orientation="h",
+                    name=f"{home_team}",
+                    marker_color=home_c,
+                    opacity=0.85,
+                    text=f"{hw_p*100:.1f}%",
+                    textposition="inside",
+                    insidetextanchor="middle",
+                    textfont=dict(color="#fff", size=11, family="Inter"),
+                )
+            )
+            fig_bar.add_trace(
+                go.Bar(
+                    y=[""],
+                    x=[d_p * 100],
+                    orientation="h",
+                    name="Draw",
+                    marker_color="#f6c343",
+                    opacity=0.85,
+                    text=f"{d_p*100:.1f}%",
+                    textposition="inside",
+                    insidetextanchor="middle",
+                    textfont=dict(color="#0b0f1a", size=11, family="Inter"),
+                )
+            )
+            fig_bar.add_trace(
+                go.Bar(
+                    y=[""],
+                    x=[aw_p * 100],
+                    orientation="h",
+                    name=f"{away_team}",
+                    marker_color=away_c,
+                    opacity=0.85,
+                    text=f"{aw_p*100:.1f}%",
+                    textposition="inside",
+                    insidetextanchor="middle",
+                    textfont=dict(color="#fff", size=11, family="Inter"),
+                )
+            )
             fig_bar.update_layout(
-                barmode="stack", height=72,
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                barmode="stack",
+                height=72,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
                 xaxis=dict(visible=False, range=[0, 100]),
                 yaxis=dict(visible=False),
                 showlegend=True,
-                legend=dict(orientation="h", y=-0.6, x=0.5, xanchor="center",
-                            font=dict(color="#8897b4", size=11, family="Inter")),
+                legend=dict(
+                    orientation="h",
+                    y=-0.6,
+                    x=0.5,
+                    xanchor="center",
+                    font=dict(color="#8897b4", size=11, family="Inter"),
+                ),
                 margin=dict(t=0, b=44, l=0, r=0),
                 font=dict(family="Inter"),
             )
@@ -549,11 +683,14 @@ elif page == "Predict":
             g1, g2, g3 = st.columns(3)
 
             def prob_card(col, label, val, color):
-                col.markdown(f"""
+                col.markdown(
+                    f"""
                 <div class="stat-card" style="border-color:{color}22;">
                     <div class="label">{label}</div>
                     <div class="val" style="color:{color};">{val*100:.1f}%</div>
-                </div>""", unsafe_allow_html=True)
+                </div>""",
+                    unsafe_allow_html=True,
+                )
 
             prob_card(g1, f"Home · {home_team}", hw_p, home_c)
             prob_card(g2, "Draw", d_p, "#f6c343")
@@ -564,8 +701,14 @@ elif page == "Predict":
 # TEAM STATS
 # ══════════════════════════════════════════════════════════════════════════════
 elif page == "Team Stats":
-    st.markdown("<div class='sec-head' style='font-size:1.4rem;'>Team statistics</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sec-sub'>Individual team performance across the simulated season.</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='sec-head' style='font-size:1.4rem;'>Team statistics</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<div class='sec-sub'>Individual team performance across the simulated season.</div>",
+        unsafe_allow_html=True,
+    )
 
     df = load_features()
     if df is None:
@@ -577,30 +720,33 @@ elif page == "Team Stats":
 
     th = df[df["home_team"] == selected].copy()
     ta = df[df["away_team"] == selected].copy()
-    total  = len(th) + len(ta)
-    wins   = int((th["result"] == "H").sum() + (ta["result"] == "A").sum())
-    draws  = int((th["result"] == "D").sum() + (ta["result"] == "D").sum())
+    total = len(th) + len(ta)
+    wins = int((th["result"] == "H").sum() + (ta["result"] == "A").sum())
+    draws = int((th["result"] == "D").sum() + (ta["result"] == "D").sum())
     losses = total - wins - draws
-    pts    = wins * 3 + draws
-    gf     = int(th["home_goals"].sum() + ta["away_goals"].sum())
-    gc     = int(th["away_goals"].sum() + ta["home_goals"].sum())
-    cs     = int((th["away_goals"] == 0).sum() + (ta["home_goals"] == 0).sum())
+    pts = wins * 3 + draws
+    gf = int(th["home_goals"].sum() + ta["away_goals"].sum())
+    gc = int(th["away_goals"].sum() + ta["home_goals"].sum())
+    cs = int((th["away_goals"] == 0).sum() + (ta["home_goals"] == 0).sum())
 
     m1, m2, m3, m4, m5, m6 = st.columns(6)
     for col, lbl, val, sub, color in [
-        (m1, "Points",        pts,    f"{total} played",              tc),
-        (m2, "Wins",          wins,   f"{wins/total*100:.0f}% rate",  "#4ec97a"),
-        (m3, "Draws",         draws,  f"{draws/total*100:.0f}% rate", "#f6c343"),
-        (m4, "Losses",        losses, f"{losses/total*100:.0f}% rate", "#e05555"),
-        (m5, "Goals Scored",  gf,     f"{gf/total:.2f} per game",     "#5b9bd5"),
-        (m6, "Clean Sheets",  cs,     f"{cs/total*100:.0f}% games",   "#8867c0"),
+        (m1, "Points", pts, f"{total} played", tc),
+        (m2, "Wins", wins, f"{wins/total*100:.0f}% rate", "#4ec97a"),
+        (m3, "Draws", draws, f"{draws/total*100:.0f}% rate", "#f6c343"),
+        (m4, "Losses", losses, f"{losses/total*100:.0f}% rate", "#e05555"),
+        (m5, "Goals Scored", gf, f"{gf/total:.2f} per game", "#5b9bd5"),
+        (m6, "Clean Sheets", cs, f"{cs/total*100:.0f}% games", "#8867c0"),
     ]:
-        col.markdown(f"""
+        col.markdown(
+            f"""
         <div class="stat-card">
             <div class="label">{lbl}</div>
             <div class="val" style="color:{color};">{val}</div>
             <div class="sub">{sub}</div>
-        </div>""", unsafe_allow_html=True)
+        </div>""",
+            unsafe_allow_html=True,
+        )
 
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
 
@@ -608,42 +754,63 @@ elif page == "Team Stats":
 
     with col_l:
         st.markdown("<div class='sec-head'>Form trend</div>", unsafe_allow_html=True)
-        st.markdown("<div class='sec-sub'>Rolling points from last 5 matches</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='sec-sub'>Rolling points from last 5 matches</div>", unsafe_allow_html=True
+        )
         form_df = th.sort_values("date") if not th.empty else ta.sort_values("date")
         form_col = "home_form" if not th.empty else "away_form"
         if not form_df.empty and form_col in form_df.columns:
             fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=form_df["date"], y=form_df[form_col],
-                mode="lines+markers",
-                line=dict(color=tc, width=2),
-                marker=dict(size=5, color=tc, line=dict(color="#0b0f1a", width=1.5)),
-                fill="tozeroy",
-                fillcolor=f"rgba({int(tc[1:3], 16)},{int(tc[3:5], 16)},{int(tc[5:7], 16)},0.08)",
-                name="Form",
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=form_df["date"],
+                    y=form_df[form_col],
+                    mode="lines+markers",
+                    line=dict(color=tc, width=2),
+                    marker=dict(size=5, color=tc, line=dict(color="#0b0f1a", width=1.5)),
+                    fill="tozeroy",
+                    fillcolor=f"rgba({int(tc[1:3], 16)},{int(tc[3:5], 16)},{int(tc[5:7], 16)},0.08)",
+                    name="Form",
+                )
+            )
             fig.update_layout(**PLOTLY_BASE, height=240, yaxis_title="Pts (last 5)", xaxis_title="")
             st.plotly_chart(fig, use_container_width=True)
 
     with col_r:
         st.markdown("<div class='sec-head'>Goals scored vs conceded</div>", unsafe_allow_html=True)
-        st.markdown("<div class='sec-sub'>Rolling 5-match averages (home games)</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='sec-sub'>Rolling 5-match averages (home games)</div>",
+            unsafe_allow_html=True,
+        )
         if not th.empty and "home_avg_scored" in th.columns:
             th_s = th.sort_values("date")
             fig2 = go.Figure()
-            fig2.add_trace(go.Scatter(
-                x=th_s["date"], y=th_s["home_avg_scored"],
-                name="Avg scored", line=dict(color="#4ec97a", width=2),
-                mode="lines+markers", marker=dict(size=4),
-            ))
-            fig2.add_trace(go.Scatter(
-                x=th_s["date"], y=th_s["home_avg_conceded"],
-                name="Avg conceded", line=dict(color="#e05555", width=2),
-                mode="lines+markers", marker=dict(size=4),
-            ))
-            fig2.update_layout(**PLOTLY_BASE, height=240,
-                               legend=dict(orientation="h", y=1.1, x=0, font=dict(size=10)),
-                               yaxis_title="Goals (rolling avg)")
+            fig2.add_trace(
+                go.Scatter(
+                    x=th_s["date"],
+                    y=th_s["home_avg_scored"],
+                    name="Avg scored",
+                    line=dict(color="#4ec97a", width=2),
+                    mode="lines+markers",
+                    marker=dict(size=4),
+                )
+            )
+            fig2.add_trace(
+                go.Scatter(
+                    x=th_s["date"],
+                    y=th_s["home_avg_conceded"],
+                    name="Avg conceded",
+                    line=dict(color="#e05555", width=2),
+                    mode="lines+markers",
+                    marker=dict(size=4),
+                )
+            )
+            fig2.update_layout(
+                **PLOTLY_BASE,
+                height=240,
+                legend=dict(orientation="h", y=1.1, x=0, font=dict(size=10)),
+                yaxis_title="Goals (rolling avg)",
+            )
             st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
@@ -651,20 +818,33 @@ elif page == "Team Stats":
 
     with col_a:
         st.markdown("<div class='sec-head'>Result breakdown</div>", unsafe_allow_html=True)
-        fig3 = go.Figure(go.Pie(
-            labels=["Wins", "Draws", "Losses"],
-            values=[wins, draws, losses],
-            hole=0.62,
-            marker=dict(colors=["#4ec97a", "#f6c343", "#e05555"],
-                        line=dict(color="#0b0f1a", width=3)),
-            textinfo="percent",
-            textfont=dict(color="#e8eeff", size=11),
-        ))
+        fig3 = go.Figure(
+            go.Pie(
+                labels=["Wins", "Draws", "Losses"],
+                values=[wins, draws, losses],
+                hole=0.62,
+                marker=dict(
+                    colors=["#4ec97a", "#f6c343", "#e05555"], line=dict(color="#0b0f1a", width=3)
+                ),
+                textinfo="percent",
+                textfont=dict(color="#e8eeff", size=11),
+            )
+        )
         fig3.update_layout(
-            **PLOTLY_BASE, height=260, showlegend=True,
+            **PLOTLY_BASE,
+            height=260,
+            showlegend=True,
             legend=dict(orientation="h", y=-0.1, x=0.5, xanchor="center", font=dict(size=10)),
-            annotations=[dict(text=f"<b>{pts}</b><br><span style='font-size:9px'>PTS</span>",
-                              x=0.5, y=0.5, font_size=18, font_color=tc, showarrow=False)],
+            annotations=[
+                dict(
+                    text=f"<b>{pts}</b><br><span style='font-size:9px'>PTS</span>",
+                    x=0.5,
+                    y=0.5,
+                    font_size=18,
+                    font_color=tc,
+                    showarrow=False,
+                )
+            ],
         )
         st.plotly_chart(fig3, use_container_width=True)
 
@@ -672,16 +852,20 @@ elif page == "Team Stats":
         st.markdown("<div class='sec-head'>Shot conversion rate</div>", unsafe_allow_html=True)
         if not th.empty and "home_conversion_rate" in th.columns:
             conv = th.sort_values("date")
-            fig4 = go.Figure(go.Bar(
-                x=conv["matchday"], y=conv["home_conversion_rate"],
-                marker=dict(
-                    color=conv["home_conversion_rate"],
-                    colorscale=[[0, "#1a2535"], [0.5, "#2a4a6a"], [1, tc]],
-                    showscale=False,
-                ),
-            ))
-            fig4.update_layout(**PLOTLY_BASE, height=260,
-                               xaxis_title="Matchday", yaxis_title="Conversion rate")
+            fig4 = go.Figure(
+                go.Bar(
+                    x=conv["matchday"],
+                    y=conv["home_conversion_rate"],
+                    marker=dict(
+                        color=conv["home_conversion_rate"],
+                        colorscale=[[0, "#1a2535"], [0.5, "#2a4a6a"], [1, tc]],
+                        showscale=False,
+                    ),
+                )
+            )
+            fig4.update_layout(
+                **PLOTLY_BASE, height=260, xaxis_title="Matchday", yaxis_title="Conversion rate"
+            )
             st.plotly_chart(fig4, use_container_width=True)
 
 
@@ -689,8 +873,14 @@ elif page == "Team Stats":
 # MODEL INSIGHTS
 # ══════════════════════════════════════════════════════════════════════════════
 elif page == "Model Insights":
-    st.markdown("<div class='sec-head' style='font-size:1.4rem;'>Model insights</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sec-sub'>Evaluation metrics, feature importance, and confusion matrices.</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='sec-head' style='font-size:1.4rem;'>Model insights</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<div class='sec-sub'>Evaluation metrics, feature importance, and confusion matrices.</div>",
+        unsafe_allow_html=True,
+    )
 
     plots_dir = Path("models/plots")
     imgs = sorted(plots_dir.glob("*.png")) if plots_dir.exists() else []
@@ -701,14 +891,16 @@ elif page == "Model Insights":
 
     def show_img(path):
         label = path.stem.replace("_", " ").title()
-        st.markdown(f"<div style='font-size:0.72rem;color:#3d5270;font-weight:600;margin-bottom:6px;'>{label}</div>",
-                    unsafe_allow_html=True)
+        st.markdown(
+            f"<div style='font-size:0.72rem;color:#3d5270;font-weight:600;margin-bottom:6px;'>{label}</div>",
+            unsafe_allow_html=True,
+        )
         st.image(str(path), use_column_width=True)
 
     comparison = [p for p in imgs if "comparison" in p.stem]
     importance = [p for p in imgs if "importance" in p.stem]
-    confusion  = [p for p in imgs if "confusion" in p.stem]
-    other      = [p for p in imgs if p not in comparison + importance + confusion]
+    confusion = [p for p in imgs if "confusion" in p.stem]
+    other = [p for p in imgs if p not in comparison + importance + confusion]
 
     for title, group in [
         ("Overall comparison", comparison),
@@ -729,8 +921,13 @@ elif page == "Model Insights":
 # LEAGUE TABLE
 # ══════════════════════════════════════════════════════════════════════════════
 elif page == "Table":
-    st.markdown("<div class='sec-head' style='font-size:1.4rem;'>League table</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sec-sub'>Simulated standings based on generated match data.</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='sec-head' style='font-size:1.4rem;'>League table</div>", unsafe_allow_html=True
+    )
+    st.markdown(
+        "<div class='sec-sub'>Simulated standings based on generated match data.</div>",
+        unsafe_allow_html=True,
+    )
 
     df = load_features()
     if df is None:
@@ -740,14 +937,17 @@ elif page == "Table":
     table = league_table(df)
 
     # Zone legend
-    st.markdown("""
+    st.markdown(
+        """
     <div style='display:flex;gap:20px;margin-bottom:16px;font-size:0.72rem;font-weight:600;'>
         <span class='zone-cl'>■ Champions League (1–4)</span>
         <span class='zone-el'>■ Europa League (5)</span>
         <span class='zone-conf'>■ Conference League (6)</span>
         <span class='zone-rel'>■ Relegation (18–20)</span>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     def zone_color(i):
         if i <= 4:
@@ -771,44 +971,50 @@ elif page == "Table":
             return "#e05555"
         return "#dde3f0"
 
-    fill_colors  = [zone_color(i) for i in range(1, len(table) + 1)]
-    font_colors  = [font_color(i) for i in range(1, len(table) + 1)]
-    gd_vals      = table["GD"].apply(lambda x: f"+{x}" if x > 0 else str(x)).tolist()
+    fill_colors = [zone_color(i) for i in range(1, len(table) + 1)]
+    font_colors = [font_color(i) for i in range(1, len(table) + 1)]
+    gd_vals = table["GD"].apply(lambda x: f"+{x}" if x > 0 else str(x)).tolist()
 
-    fig = go.Figure(data=[go.Table(
-        columnwidth=[36, 170, 44, 44, 44, 44, 52, 52, 52, 52],
-        header=dict(
-            values=["#", "Club", "P", "W", "D", "L", "GF", "GD", "CS", "Pts"],
-            fill_color="#0e1422",
-            align=["center", "left"] + ["center"] * 8,
-            font=dict(color="#3d5270", size=11, family="Inter"),
-            line_color="#1a2535",
-            height=34,
-        ),
-        cells=dict(
-            values=[
-                table.index.tolist(),
-                table["team"].tolist(),
-                table["P"].tolist(),
-                table["W"].tolist(),
-                table["D"].tolist(),
-                table["L"].tolist(),
-                table["GF"].tolist(),
-                gd_vals,
-                table["CS"].tolist(),
-                table["Pts"].tolist(),
-            ],
-            fill_color=[fill_colors],
-            align=["center", "left"] + ["center"] * 8,
-            font=dict(
-                color=[font_colors, font_colors] + [["#8897b4"] * len(table)] * 6 + [font_colors],
-                size=12,
-                family="Inter",
-            ),
-            line_color="#1a2535",
-            height=32,
-        ),
-    )])
+    fig = go.Figure(
+        data=[
+            go.Table(
+                columnwidth=[36, 170, 44, 44, 44, 44, 52, 52, 52, 52],
+                header=dict(
+                    values=["#", "Club", "P", "W", "D", "L", "GF", "GD", "CS", "Pts"],
+                    fill_color="#0e1422",
+                    align=["center", "left"] + ["center"] * 8,
+                    font=dict(color="#3d5270", size=11, family="Inter"),
+                    line_color="#1a2535",
+                    height=34,
+                ),
+                cells=dict(
+                    values=[
+                        table.index.tolist(),
+                        table["team"].tolist(),
+                        table["P"].tolist(),
+                        table["W"].tolist(),
+                        table["D"].tolist(),
+                        table["L"].tolist(),
+                        table["GF"].tolist(),
+                        gd_vals,
+                        table["CS"].tolist(),
+                        table["Pts"].tolist(),
+                    ],
+                    fill_color=[fill_colors],
+                    align=["center", "left"] + ["center"] * 8,
+                    font=dict(
+                        color=[font_colors, font_colors]
+                        + [["#8897b4"] * len(table)] * 6
+                        + [font_colors],
+                        size=12,
+                        family="Inter",
+                    ),
+                    line_color="#1a2535",
+                    height=32,
+                ),
+            )
+        ]
+    )
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         margin=dict(t=0, b=0, l=0, r=0),
@@ -819,19 +1025,22 @@ elif page == "Table":
     st.markdown("<div class='divider'></div>", unsafe_allow_html=True)
     st.markdown("<div class='sec-head'>Points — top 10</div>", unsafe_allow_html=True)
 
-    top10  = table.head(10)
+    top10 = table.head(10)
     colors = [TEAM_COLORS.get(t, "#5b9bd5") for t in top10["team"]]
 
-    fig2 = go.Figure(go.Bar(
-        x=top10["team"],
-        y=top10["Pts"],
-        marker=dict(color=colors, opacity=0.85, line=dict(color="#0b0f1a", width=1)),
-        text=top10["Pts"],
-        textposition="outside",
-        textfont=dict(color="#8897b4", size=11, family="Inter"),
-    ))
+    fig2 = go.Figure(
+        go.Bar(
+            x=top10["team"],
+            y=top10["Pts"],
+            marker=dict(color=colors, opacity=0.85, line=dict(color="#0b0f1a", width=1)),
+            text=top10["Pts"],
+            textposition="outside",
+            textfont=dict(color="#8897b4", size=11, family="Inter"),
+        )
+    )
     fig2.update_layout(
-        **PLOTLY_BASE, height=300,
+        **PLOTLY_BASE,
+        height=300,
         yaxis_title="Points",
         xaxis_tickangle=-25,
         showlegend=False,

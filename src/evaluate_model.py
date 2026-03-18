@@ -37,14 +37,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MODELS_DIR    = Path("models")
+MODELS_DIR = Path("models")
 PROCESSED_DIR = Path("data/processed")
-PLOTS_DIR     = Path("models/plots")
+PLOTS_DIR = Path("models/plots")
 
 sns.set_theme(style="whitegrid", palette="muted")
 
 
 # ── Loaders ────────────────────────────────────────────────────────────────────
+
 
 def load_model(name: str):
     path = MODELS_DIR / f"{name}.joblib"
@@ -54,7 +55,7 @@ def load_model(name: str):
 
 
 def load_artifacts() -> tuple:
-    le      = joblib.load(MODELS_DIR / "label_encoder.joblib")
+    le = joblib.load(MODELS_DIR / "label_encoder.joblib")
     feat_cols = joblib.load(MODELS_DIR / "feature_cols.joblib")
     return le, feat_cols
 
@@ -73,6 +74,7 @@ def load_test_data(feat_cols: list[str]) -> tuple:
 
 # ── Metrics ────────────────────────────────────────────────────────────────────
 
+
 def compute_metrics(model, X_test: pd.DataFrame, y_test, le) -> dict:
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)
@@ -80,20 +82,21 @@ def compute_metrics(model, X_test: pd.DataFrame, y_test, le) -> dict:
     target_names = le.classes_.tolist()
 
     metrics = {
-        "accuracy":  accuracy_score(y_test, y_pred),
+        "accuracy": accuracy_score(y_test, y_pred),
         "precision": precision_score(y_test, y_pred, average="weighted", zero_division=0),
-        "recall":    recall_score(y_test, y_pred, average="weighted", zero_division=0),
-        "f1":        f1_score(y_test, y_pred, average="weighted", zero_division=0),
-        "report":    classification_report(y_test, y_pred, target_names=target_names),
-        "cm":        confusion_matrix(y_test, y_pred),
-        "y_pred":    y_pred,
-        "y_prob":    y_prob,
-        "classes":   target_names,
+        "recall": recall_score(y_test, y_pred, average="weighted", zero_division=0),
+        "f1": f1_score(y_test, y_pred, average="weighted", zero_division=0),
+        "report": classification_report(y_test, y_pred, target_names=target_names),
+        "cm": confusion_matrix(y_test, y_pred),
+        "y_pred": y_pred,
+        "y_prob": y_prob,
+        "classes": target_names,
     }
     return metrics
 
 
 # ── Plots ──────────────────────────────────────────────────────────────────────
+
 
 def plot_confusion_matrix(cm, classes: list[str], model_name: str):
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -169,10 +172,12 @@ def plot_team_performance(df_test: pd.DataFrame, y_pred: np.ndarray, le, model_n
     df["y_pred_label"] = le.inverse_transform(y_pred)
     df["correct"] = df["result"] == df["y_pred_label"]
 
-    all_teams = pd.concat([
-        df[["home_team", "correct"]].rename(columns={"home_team": "team"}),
-        df[["away_team", "correct"]].rename(columns={"away_team": "team"}),
-    ])
+    all_teams = pd.concat(
+        [
+            df[["home_team", "correct"]].rename(columns={"home_team": "team"}),
+            df[["away_team", "correct"]].rename(columns={"away_team": "team"}),
+        ]
+    )
     team_acc = all_teams.groupby("team")["correct"].mean().sort_values()
 
     if team_acc.empty:
@@ -194,6 +199,7 @@ def plot_team_performance(df_test: pd.DataFrame, y_pred: np.ndarray, le, model_n
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
+
 
 def evaluate(model_names: list[str] | None = None) -> dict:
     """

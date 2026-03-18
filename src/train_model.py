@@ -41,19 +41,34 @@ TEST_SIZE = 0.2  # fraction of data held out as test set
 
 # Features used for training (pre-match information only)
 FEATURE_COLS = [
-    "home_form", "home_avg_scored", "home_avg_conceded",
-    "home_avg_shots", "home_avg_shots_on", "home_conversion_rate",
+    "home_form",
+    "home_avg_scored",
+    "home_avg_conceded",
+    "home_avg_shots",
+    "home_avg_shots_on",
+    "home_conversion_rate",
     "home_goal_diff",
-    "away_form", "away_avg_scored", "away_avg_conceded",
-    "away_avg_shots", "away_avg_shots_on", "away_conversion_rate",
+    "away_form",
+    "away_avg_scored",
+    "away_avg_conceded",
+    "away_avg_shots",
+    "away_avg_shots_on",
+    "away_conversion_rate",
     "away_goal_diff",
-    "form_diff", "scored_diff", "conceded_diff",
-    "h2h_home_wins", "h2h_away_wins", "h2h_win_rate",
-    "home_advantage", "month", "day_of_week",
+    "form_diff",
+    "scored_diff",
+    "conceded_diff",
+    "h2h_home_wins",
+    "h2h_away_wins",
+    "h2h_win_rate",
+    "home_advantage",
+    "month",
+    "day_of_week",
 ]
 
 
 # ── Data loading ───────────────────────────────────────────────────────────────
+
 
 def load_features(path: Path | None = None) -> pd.DataFrame:
     if path is None:
@@ -78,63 +93,68 @@ def prepare_xy(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, LabelEncoder]
     return X, pd.Series(y), le
 
 
-def time_split(
-    X: pd.DataFrame, y: pd.Series, test_size: float = TEST_SIZE
-) -> tuple:
+def time_split(X: pd.DataFrame, y: pd.Series, test_size: float = TEST_SIZE) -> tuple:
     """Time-ordered train / test split (no shuffling)."""
     n = len(X)
     split_idx = int(n * (1 - test_size))
     X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
     y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
-    logger.info(
-        "Train size: %d | Test size: %d", len(X_train), len(X_test)
-    )
+    logger.info("Train size: %d | Test size: %d", len(X_train), len(X_test))
     return X_train, X_test, y_train, y_test
 
 
 # ── Model definitions ──────────────────────────────────────────────────────────
 
+
 def build_rf_pipeline() -> Pipeline:
-    return Pipeline([
-        ("scaler", StandardScaler()),
-        ("clf", RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=-1)),
-    ])
+    return Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            ("clf", RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=-1)),
+        ]
+    )
 
 
 def build_xgb_pipeline() -> Pipeline:
-    return Pipeline([
-        ("scaler", StandardScaler()),
-        ("clf", XGBClassifier(
-            random_state=RANDOM_STATE,
-            eval_metric="mlogloss",
-            n_jobs=-1,
-        )),
-    ])
+    return Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            (
+                "clf",
+                XGBClassifier(
+                    random_state=RANDOM_STATE,
+                    eval_metric="mlogloss",
+                    n_jobs=-1,
+                ),
+            ),
+        ]
+    )
 
 
 # ── Hyperparameter grids ───────────────────────────────────────────────────────
 
 RF_PARAM_DIST = {
-    "clf__n_estimators":      [100, 200, 300, 500],
-    "clf__max_depth":         [None, 5, 10, 15, 20],
+    "clf__n_estimators": [100, 200, 300, 500],
+    "clf__max_depth": [None, 5, 10, 15, 20],
     "clf__min_samples_split": [2, 5, 10],
-    "clf__min_samples_leaf":  [1, 2, 4],
-    "clf__max_features":      ["sqrt", "log2", 0.5],
+    "clf__min_samples_leaf": [1, 2, 4],
+    "clf__max_features": ["sqrt", "log2", 0.5],
 }
 
 XGB_PARAM_DIST = {
-    "clf__n_estimators":  [100, 200, 300],
-    "clf__max_depth":     [3, 5, 7, 9],
+    "clf__n_estimators": [100, 200, 300],
+    "clf__max_depth": [3, 5, 7, 9],
     "clf__learning_rate": [0.01, 0.05, 0.1, 0.2],
-    "clf__subsample":     [0.6, 0.8, 1.0],
+    "clf__subsample": [0.6, 0.8, 1.0],
     "clf__colsample_bytree": [0.6, 0.8, 1.0],
-    "clf__gamma":         [0, 0.1, 0.3],
-    "clf__reg_alpha":     [0, 0.1, 0.5],
-    "clf__reg_lambda":    [1, 1.5, 2],
+    "clf__gamma": [0, 0.1, 0.3],
+    "clf__reg_alpha": [0, 0.1, 0.5],
+    "clf__reg_lambda": [1, 1.5, 2],
 }
 
 
 # ── Training helpers ───────────────────────────────────────────────────────────
+
 
 def tune_model(
     pipeline: Pipeline,
@@ -162,7 +182,9 @@ def tune_model(
     search.fit(X_train, y_train)
     logger.info(
         "%s best CV accuracy: %.4f | params: %s",
-        name, search.best_score_, search.best_params_,
+        name,
+        search.best_score_,
+        search.best_params_,
     )
     return search
 
@@ -176,6 +198,7 @@ def save_model(model, name: str, label_encoder: LabelEncoder):
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
+
 
 def train(feature_path: Path | None = None) -> dict:
     """
@@ -196,32 +219,40 @@ def train(feature_path: Path | None = None) -> dict:
 
     # ── Random Forest ──────────────────────────────────────────────────────────
     rf_search = tune_model(
-        build_rf_pipeline(), RF_PARAM_DIST,
-        X_train, y_train,
-        n_iter=20, cv_splits=5, name="RandomForest",
+        build_rf_pipeline(),
+        RF_PARAM_DIST,
+        X_train,
+        y_train,
+        n_iter=20,
+        cv_splits=5,
+        name="RandomForest",
     )
     save_model(rf_search.best_estimator_, "random_forest", le)
     results["random_forest"] = {
-        "model":       rf_search.best_estimator_,
-        "cv_score":    rf_search.best_score_,
+        "model": rf_search.best_estimator_,
+        "cv_score": rf_search.best_score_,
         "best_params": rf_search.best_params_,
-        "X_test":      X_test,
-        "y_test":      y_test,
+        "X_test": X_test,
+        "y_test": y_test,
     }
 
     # ── XGBoost ───────────────────────────────────────────────────────────────
     xgb_search = tune_model(
-        build_xgb_pipeline(), XGB_PARAM_DIST,
-        X_train, y_train,
-        n_iter=20, cv_splits=5, name="XGBoost",
+        build_xgb_pipeline(),
+        XGB_PARAM_DIST,
+        X_train,
+        y_train,
+        n_iter=20,
+        cv_splits=5,
+        name="XGBoost",
     )
     save_model(xgb_search.best_estimator_, "xgboost", le)
     results["xgboost"] = {
-        "model":       xgb_search.best_estimator_,
-        "cv_score":    xgb_search.best_score_,
+        "model": xgb_search.best_estimator_,
+        "cv_score": xgb_search.best_score_,
         "best_params": xgb_search.best_params_,
-        "X_test":      X_test,
-        "y_test":      y_test,
+        "X_test": X_test,
+        "y_test": y_test,
     }
 
     # Persist label encoder & feature list
